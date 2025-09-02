@@ -16,17 +16,13 @@ public class MqttConfig {
     @Value("${mqtt.client-id}")
     private String clientId;
 
-    @Value("${mqtt.username}")
+    // 关键修改：添加默认空值（:后面的空字符串）
+    @Value("${mqtt.username:}")  // 若配置文件中无此属性，默认空字符串
     private String username;
 
-    @Value("${mqtt.password}")
+    @Value("${mqtt.password:}")  // 若配置文件中无此属性，默认空字符串
     private String password;
 
-    /**
-     * 连接MQTT服务器
-     * @return
-     * new Dog();  被执行
-     */
     @Bean
     public MqttConnectOptions mqttConnectOptions() {
         MqttConnectOptions options = new MqttConnectOptions();
@@ -36,6 +32,7 @@ public class MqttConfig {
         options.setConnectionTimeout(10);
         options.setKeepAliveInterval(60);
 
+        // 只有当用户名不为空时才设置（兼容无需认证的MQTT服务器）
         if (username != null && !username.isEmpty()) {
             options.setUserName(username);
             options.setPassword(password.toCharArray());
@@ -44,14 +41,5 @@ public class MqttConfig {
         return options;
     }
 
-    /**
-     * 工厂模式
-     * @return
-     */
-    @Bean
-    public MqttPahoClientFactory mqttClientFactory() {
-        DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
-        factory.setConnectionOptions(mqttConnectOptions());
-        return factory;
-    }
+
 }
